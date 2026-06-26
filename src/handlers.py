@@ -28,7 +28,7 @@ async def register(payload: RegisterRequest, request: Request):
         id=user_id,
         username=payload.username,
         email=payload.email,
-        password_hash=payload.password,  # Mocking hashing just like Rust did
+        password_hash=payload.password,  # Mocking hashing for simplicity
         created_at=created_at,
     )
 

@@ -39,7 +39,7 @@ class RegisterResponse(BaseModel):
 
     @field_serializer("created_at")
     def serialize_datetime(self, dt: datetime, _info):
-        # Format as ISO 8601 with Z suffix instead of +00:00 to match Rust's Utc serialization
+        # Format as ISO 8601 with Z suffix instead of +00:00 for Utc serialization
         return dt.isoformat().replace("+00:00", "Z")
 
 
