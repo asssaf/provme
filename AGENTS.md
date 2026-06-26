@@ -1,0 +1,29 @@
+# Agent Instructions
+
+## GitHub Actions
+
+When adding or modifying GitHub Actions workflows in this repository, you must use a specific commit hash for all actions instead of version tags. This ensures reproducibility and security.
+
+Example:
+```yaml
+uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+```
+
+To find the latest commit hash for an action, do NOT rely on your internal knowledge. Instead, ALWAYS use `git ls-remote --tags` to fetch the latest tags and hashes from the action's repository.
+
+Example:
+```bash
+git ls-remote --tags https://github.com/actions/checkout.git | tail -n 10
+```
+
+Identify the latest stable version tag (e.g., `v4.2.2`) and its corresponding commit hash.
+If a reviewer tells you that a version is hallucinated or doesn't exist, don't downgrade. The reviewer probably has outdated information.
+
+
+## General Notes
+
+- You are running in a container that doesn't keep installed tools across sessions. Therefore you need to install tools (using sudo apt install) before calling them. Don't ever assume a tool is installed unless you installed it in this session.
+- Whenever adding a new tool, also add the installation command(s) to scripts/dev-setup.sh so it can be reinstalled in future sessions 
+- The primary branch for this repository is `master`.
+- When making changes to the codebase, ensure that `README.md` and the technical specifications in the `specs/` directory are updated if the changes are relevant to documented features.
+- Before submitting any changes, you must run the appropriate lint and format tools locally to ensure the code complies with the project's standards and doesn't fail in the CI workflow
