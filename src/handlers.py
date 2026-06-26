@@ -6,7 +6,10 @@ import uuid
 
 router = APIRouter()
 
-@router.post("/v1/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED)
+
+@router.post(
+    "/v1/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED
+)
 async def register(payload: RegisterRequest, request: Request):
     state = request.app.state.app_state
 
@@ -26,7 +29,7 @@ async def register(payload: RegisterRequest, request: Request):
         username=payload.username,
         email=payload.email,
         password_hash=payload.password,  # Mocking hashing just like Rust did
-        created_at=created_at
+        created_at=created_at,
     )
 
     state.users[user_id] = new_user
@@ -35,5 +38,5 @@ async def register(payload: RegisterRequest, request: Request):
         user_id=user_id,
         username=payload.username,
         email=payload.email,
-        created_at=created_at
+        created_at=created_at,
     )

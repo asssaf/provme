@@ -2,6 +2,7 @@ from fastapi.testclient import TestClient
 from src.main import create_app
 from src.models import AppState
 
+
 def test_register_success():
     state = AppState()
     app = create_app(state)
@@ -12,8 +13,8 @@ def test_register_success():
         json={
             "username": "alice",
             "email": "alice@example.com",
-            "password": "supersecurepassword"
-        }
+            "password": "supersecurepassword",
+        },
     )
 
     assert response.status_code == 201
@@ -23,6 +24,7 @@ def test_register_success():
     assert isinstance(body["user_id"], str)
     assert isinstance(body["created_at"], str)
     assert body["created_at"].endswith("Z")
+
 
 def test_register_duplicate_username():
     state = AppState()
@@ -35,8 +37,8 @@ def test_register_duplicate_username():
         json={
             "username": "alice",
             "email": "alice@example.com",
-            "password": "supersecurepassword"
-        }
+            "password": "supersecurepassword",
+        },
     )
     assert response.status_code == 201
 
@@ -46,12 +48,13 @@ def test_register_duplicate_username():
         json={
             "username": "ALICE",
             "email": "another@example.com",
-            "password": "supersecurepassword"
-        }
+            "password": "supersecurepassword",
+        },
     )
     assert response.status_code == 409
     body = response.json()
     assert body["error"] == "Username is already taken"
+
 
 def test_register_duplicate_email():
     state = AppState()
@@ -64,8 +67,8 @@ def test_register_duplicate_email():
         json={
             "username": "alice",
             "email": "alice@example.com",
-            "password": "supersecurepassword"
-        }
+            "password": "supersecurepassword",
+        },
     )
     assert response.status_code == 201
 
@@ -75,12 +78,13 @@ def test_register_duplicate_email():
         json={
             "username": "bob",
             "email": "ALICE@example.com",
-            "password": "supersecurepassword"
-        }
+            "password": "supersecurepassword",
+        },
     )
     assert response.status_code == 409
     body = response.json()
     assert body["error"] == "Email is already registered"
+
 
 def test_register_invalid_email():
     state = AppState()
@@ -92,12 +96,13 @@ def test_register_invalid_email():
         json={
             "username": "alice",
             "email": "invalid-email",
-            "password": "supersecurepassword"
-        }
+            "password": "supersecurepassword",
+        },
     )
     assert response.status_code == 400
     body = response.json()
     assert body["error"] == "Invalid email address"
+
 
 def test_register_invalid_username():
     state = AppState()
@@ -109,12 +114,13 @@ def test_register_invalid_username():
         json={
             "username": "   ",
             "email": "alice@example.com",
-            "password": "supersecurepassword"
-        }
+            "password": "supersecurepassword",
+        },
     )
     assert response.status_code == 400
     body = response.json()
     assert body["error"] == "Username cannot be empty"
+
 
 def test_register_short_password():
     state = AppState()
@@ -123,11 +129,7 @@ def test_register_short_password():
 
     response = client.post(
         "/v1/register",
-        json={
-            "username": "alice",
-            "email": "alice@example.com",
-            "password": "12345"
-        }
+        json={"username": "alice", "email": "alice@example.com", "password": "12345"},
     )
     assert response.status_code == 400
     body = response.json()
