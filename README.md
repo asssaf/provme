@@ -83,3 +83,16 @@ Executes the test suite with `pytest`.
 ```bash
 python -m pytest
 ```
+
+### Format and Lint
+Runs linter checks and verifies formatting with `ruff`.
+```bash
+python -m ruff check .
+python -m ruff format --check .
+```
+
+To auto-format files:
+```bash
+python -m ruff format .
+```
+
