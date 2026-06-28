@@ -17,39 +17,47 @@ A lightweight, asynchronous Python HTTP server built using **FastAPI** and **Uvi
 
 ### POST `/v1/register`
 
-Register a new user.
+Register a new client.
 
 #### Request Body (`application/json`)
 ```json
 {
-  "username": "john_doe",
-  "email": "john.doe@example.com",
-  "password": "secure_password_123"
+  "client_id": "8f3b2024-9b2f-4f76-8041-b0e7d56653df",
+  "ip": "192.168.1.100",
+  "ssh": {
+    "user": "ubuntu",
+    "port": 22,
+    "host-key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL..."
+  }
 }
 ```
 
 #### Response Body (`application/json` - `201 Created`)
 ```json
 {
-  "user_id": "8f3b2024-9b2f-4f76-8041-b0e7d56653df",
-  "username": "john_doe",
-  "email": "john.doe@example.com",
+  "client_id": "8f3b2024-9b2f-4f76-8041-b0e7d56653df",
+  "ip": "192.168.1.100",
+  "ssh": {
+    "user": "ubuntu",
+    "port": 22,
+    "host-key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL..."
+  },
   "created_at": "2026-06-25T23:12:42Z"
 }
 ```
 
 #### Error Responses
 
-- **400 Bad Request**: Invalid inputs (e.g., password too short, invalid email address).
+- **400 Bad Request**: Invalid inputs (e.g., invalid IP address, missing fields, or empty ssh user).
   ```json
   {
-    "error": "Password must be at least 6 characters"
+    "error": "Invalid IP address"
   }
   ```
-- **409 Conflict**: Username or email already exists.
+- **409 Conflict**: Client is already registered.
   ```json
   {
-    "error": "Username is already taken"
+    "error": "Client is already registered"
   }
   ```
 

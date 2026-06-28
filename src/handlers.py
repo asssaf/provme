@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Request, status
-from src.models import RegisterRequest, RegisterResponse, User
-from src.errors import UsernameConflictException, EmailConflictException
+from src.models import RegisterRequest, RegisterResponse, Client
+from src.errors import ClientConflictException
 from datetime import datetime, timezone
-import uuid
 
 router = APIRouter()
 
@@ -13,30 +12,25 @@ router = APIRouter()
 async def register(payload: RegisterRequest, request: Request):
     state = request.app.state.app_state
 
-    # Check for duplicate username/email (case-insensitive)
-    for user in state.users.values():
-        if user.username.lower() == payload.username.lower():
-            raise UsernameConflictException()
-        if user.email.lower() == payload.email.lower():
-            raise EmailConflictException()
+    # Check if client_id is already registered
+    if payload.client_id in state.clients:
+        raise ClientConflictException()
 
-    # Create new user
-    user_id = uuid.uuid4()
+    # Create new client
     created_at = datetime.now(timezone.utc)
 
-    new_user = User(
-        id=user_id,
-        username=payload.username,
-        email=payload.email,
-        password_hash=payload.password,  # Mocking hashing for simplicity
+    new_client = Client(
+        client_id=payload.client_id,
+        ip=payload.ip,
+        ssh=payload.ssh,
         created_at=created_at,
     )
 
-    state.users[user_id] = new_user
+    state.clients[payload.client_id] = new_client
 
     return RegisterResponse(
-        user_id=user_id,
-        username=payload.username,
-        email=payload.email,
+        client_id=payload.client_id,
+        ip=payload.ip,
+        ssh=payload.ssh,
         created_at=created_at,
     )

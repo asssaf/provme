@@ -9,14 +9,9 @@ class APIException(Exception):
         self.detail = detail
 
 
-class UsernameConflictException(APIException):
+class ClientConflictException(APIException):
     def __init__(self):
-        super().__init__(status.HTTP_409_CONFLICT, "Username is already taken")
-
-
-class EmailConflictException(APIException):
-    def __init__(self):
-        super().__init__(status.HTTP_409_CONFLICT, "Email is already registered")
+        super().__init__(status.HTTP_409_CONFLICT, "Client is already registered")
 
 
 class InvalidInputException(APIException):
