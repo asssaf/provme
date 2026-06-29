@@ -5,3 +5,7 @@ __pycache__/
 
 # Virtual environment
 .venv/
+
+# Gleam build outputs
+src/frontend/build/
+

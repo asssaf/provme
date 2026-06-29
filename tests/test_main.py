@@ -189,3 +189,113 @@ def test_register_missing_ssh_fields():
     assert response.status_code == 400
     body = response.json()
     assert body["error"] == "host-key is required"
+
+
+def test_list_registrations_empty():
+    state = AppState()
+    app = create_app(state)
+    client = TestClient(app)
+
+    response = client.get("/v1/registrations")
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_list_registrations_non_empty():
+    state = AppState()
+    app = create_app(state)
+    client = TestClient(app)
+
+    client_id = "8f3b2024-9b2f-4f76-8041-b0e7d56653df"
+    payload = {
+        "client_id": client_id,
+        "ip": "192.168.1.100",
+        "ssh": {
+            "user": "ubuntu",
+            "port": 22,
+            "host-key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL...",
+        },
+    }
+
+    # Register first
+    response = client.post("/v1/register", json=payload)
+    assert response.status_code == 201
+
+    # List registrations
+    response = client.get("/v1/registrations")
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body) == 1
+    assert body[0]["client_id"] == client_id
+
+
+def test_delete_registration_success():
+    state = AppState()
+    app = create_app(state)
+    client = TestClient(app)
+
+    client_id = "8f3b2024-9b2f-4f76-8041-b0e7d56653df"
+    payload = {
+        "client_id": client_id,
+        "ip": "192.168.1.100",
+        "ssh": {
+            "user": "ubuntu",
+            "port": 22,
+            "host-key": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIL...",
+        },
+    }
+
+    client.post("/v1/register", json=payload)
+
+    # Delete client
+    response = client.delete(f"/v1/registrations/{client_id}")
+    assert response.status_code == 200
+    assert response.json() == {"message": "Client deregistered successfully"}
+
+    # Ensure it is gone from registrations
+    response = client.get("/v1/registrations")
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_delete_registration_not_found():
+    state = AppState()
+    app = create_app(state)
+    client = TestClient(app)
+
+    response = client.delete("/v1/registrations/8f3b2024-9b2f-4f76-8041-b0e7d56653df")
+    assert response.status_code == 404
+    assert response.json() == {"error": "Client not found"}
+
+
+def test_admin_portal_get():
+    state = AppState()
+    app = create_app(state)
+    client = TestClient(app)
+
+    response = client.get("/admin")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert "Provme Admin" in response.text
+
+
+def test_admin_portal_root_get():
+    state = AppState()
+    app = create_app(state)
+    client = TestClient(app)
+
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "text/html" in response.headers["content-type"]
+    assert "Provme Admin" in response.text
+
+
+def test_static_frontend_js_get():
+    state = AppState()
+    app = create_app(state)
+    client = TestClient(app)
+
+    response = client.get("/static/frontend.js")
+    assert response.status_code == 200
+    # Starlette might return application/javascript or text/javascript depending on MIME db, both are fine
+    assert "javascript" in response.headers["content-type"]
