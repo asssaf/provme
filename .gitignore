@@ -5,3 +5,9 @@ __pycache__/
 
 # Virtual environment
 .venv/
+
+# Elm compiler cache
+elm-stuff/
+
+# Compiled static assets
+src/static/elm.js

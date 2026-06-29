@@ -12,9 +12,17 @@ logger = logging.getLogger("provme")
 
 
 def create_app(state: AppState) -> FastAPI:
+    from fastapi.staticfiles import StaticFiles
+    import os
+
     app = FastAPI(title="Provme REST API Server")
     app.state.app_state = state
     app.include_router(router)
+
+    # Mount static files
+    static_dir = os.path.join(os.path.dirname(__file__), "static")
+    if os.path.exists(static_dir):
+        app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
     # Exception handlers
     app.add_exception_handler(APIException, api_exception_handler)

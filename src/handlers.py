@@ -1,7 +1,11 @@
 from fastapi import APIRouter, Request, status
+from fastapi.responses import HTMLResponse
 from src.models import RegisterRequest, RegisterResponse, Client
-from src.errors import ClientConflictException
+from src.errors import ClientConflictException, APIException
+from src.admin_html import ADMIN_HTML
 from datetime import datetime, timezone
+from typing import List
+from uuid import UUID
 
 router = APIRouter()
 
@@ -34,3 +38,24 @@ async def register(payload: RegisterRequest, request: Request):
         ssh=payload.ssh,
         created_at=created_at,
     )
+
+
+@router.get("/v1/registrations", response_model=List[Client])
+async def list_registrations(request: Request):
+    state = request.app.state.app_state
+    return list(state.clients.values())
+
+
+@router.delete("/v1/registrations/{client_id}", status_code=status.HTTP_200_OK)
+async def delete_registration(client_id: UUID, request: Request):
+    state = request.app.state.app_state
+    if client_id not in state.clients:
+        raise APIException(status.HTTP_404_NOT_FOUND, "Client not found")
+    del state.clients[client_id]
+    return {"message": "Client deregistered successfully"}
+
+
+@router.get("/admin", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
+async def get_admin_portal():
+    return HTMLResponse(content=ADMIN_HTML)
