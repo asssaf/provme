@@ -5,6 +5,7 @@ import Main exposing (..)
 import Test exposing (..)
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Http
 
 
 suite : Test
@@ -56,6 +57,18 @@ suite =
                 \_ ->
                     uniqueList [ "a", "b", "a", "c", "b" ]
                         |> Expect.equal [ "a", "b", "c" ]
+
+            , test "hexChar converts 0 to '0'" <|
+                \_ -> hexChar 0 |> Expect.equal '0'
+
+            , test "hexChar converts 9 to '9'" <|
+                \_ -> hexChar 9 |> Expect.equal '9'
+
+            , test "hexChar converts 10 to 'a'" <|
+                \_ -> hexChar 10 |> Expect.equal 'a'
+
+            , test "hexChar converts 15 to 'f'" <|
+                \_ -> hexChar 15 |> Expect.equal 'f'
             ]
         , describe "JSON Decoders & Encoders"
             [ test "clientDecoder decodes valid JSON" <|
@@ -122,6 +135,17 @@ suite =
                     encoded
                         |> Encode.encode 0
                         |> Expect.equal """{"user":"ubuntu","port":22,"host-key":"some-key"}"""
+
+            , test "clientDecoder fails on missing required fields" <|
+                \_ ->
+                    let
+                        invalidJson = """{ "ip": "192.168.1.100" }"""
+                    in
+                    case Decode.decodeString clientDecoder invalidJson of
+                        Ok _ ->
+                            Expect.fail "Expected clientDecoder to fail on incomplete JSON, but it succeeded."
+                        Err _ ->
+                            Expect.pass
             ]
         , describe "Update Function"
             [ test "SearchChanged updates searchQuery" <|
@@ -174,5 +198,28 @@ suite =
                         ( updatedModel, _ ) = update (DismissToast 1) initialModel
                     in
                     Expect.equal [ { id = 2, message = "Toast 2", type_ = Error } ] updatedModel.toasts
+
+            , test "FetchedData Ok sorts registrations by createdAt descending" <|
+                \_ ->
+                    let
+                        ( initialModel, _ ) = init ()
+                        unsortedClients =
+                            [ { clientId = "old", ip = "1.1.1.1", ssh = { user = "ubuntu", port_ = 22, hostKey = "k" }, createdAt = "2024-01-01T00:00:00Z" }
+                            , { clientId = "new", ip = "2.2.2.2", ssh = { user = "ubuntu", port_ = 22, hostKey = "k" }, createdAt = "2024-01-03T00:00:00Z" }
+                            , { clientId = "mid", ip = "3.3.3.3", ssh = { user = "ubuntu", port_ = 22, hostKey = "k" }, createdAt = "2024-01-02T00:00:00Z" }
+                            ]
+                        ( updatedModel, _ ) = update (FetchedData (Ok unsortedClients)) initialModel
+                    in
+                    List.map .clientId updatedModel.registrations
+                        |> Expect.equal [ "new", "mid", "old" ]
+
+            , test "FetchedData failure adds an error toast" <|
+                \_ ->
+                    let
+                        ( initialModel, _ ) = init ()
+                        ( updatedModel, _ ) = update (FetchedData (Err Http.NetworkError)) initialModel
+                    in
+                    List.length updatedModel.toasts
+                        |> Expect.equal 1
             ]
         ]
