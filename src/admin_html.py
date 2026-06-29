@@ -820,14 +820,43 @@ ADMIN_HTML = """<!DOCTYPE html>
 
         // Port subscriptions
         app.ports.copyToClipboard.subscribe(function(text) {
-            navigator.clipboard.writeText(text).then(function() {
-                if (app.ports.copiedFeedback) {
-                    app.ports.copiedFeedback.send(true);
-                }
-            }).catch(function(err) {
-                console.error("Could not copy text: ", err);
-            });
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(function() {
+                    if (app.ports.copiedFeedback) {
+                        app.ports.copiedFeedback.send(true);
+                    }
+                }).catch(function(err) {
+                    console.error("Could not copy text: ", err);
+                    fallbackCopyText(text);
+                });
+            } else {
+                fallbackCopyText(text);
+            }
         });
+
+        function fallbackCopyText(text) {
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+            // Avoid scrolling to bottom
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            textArea.style.opacity = "0";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                var successful = document.execCommand('copy');
+                if (successful && app.ports.copiedFeedback) {
+                    app.ports.copiedFeedback.send(true);
+                } else if (!successful) {
+                    console.error("Fallback: Copying text command was unsuccessful");
+                }
+            } catch (err) {
+                console.error("Fallback: Oops, unable to copy", err);
+            }
+            document.body.removeChild(textArea);
+        }
     </script>
 </body>
 </html>
