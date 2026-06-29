@@ -33,7 +33,20 @@ jobs:
       run: |
         ruff format --check .
 
+    - name: Set up Elm compiler
+      run: |
+        curl -L -o elm.gz https://github.com/elm/compiler/releases/download/0.19.1/binary-for-linux-64-bit.gz
+        gunzip elm.gz
+        chmod +x elm
+        sudo mv elm /usr/local/bin/
+
+    - name: Verify Elm Compilation & Asset Integrity
+      run: |
+        elm make src/elm/Main.elm --output=src/static/elm.js
+        git diff --exit-code src/static/elm.js
+
     - name: Run tests
       run: |
         python -m pytest
+
 
