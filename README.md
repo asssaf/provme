@@ -146,9 +146,14 @@ elm make src/elm/Main.elm --output=src/static/elm.js
 ```
 
 ### Run Tests
-Executes the test suite with `pytest`.
+Executes the Python test suite with `pytest`.
 ```bash
 python -m pytest
+```
+
+Executes the Elm frontend unit tests with `elm-test-rs`.
+```bash
+elm-test-rs
 ```
 
 ### Format and Lint

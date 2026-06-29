@@ -46,6 +46,18 @@ if ! command -v elm &> /dev/null; then
     sudo ln -sf "$ELM_CACHE_PATH" /usr/local/bin/elm
 fi
 
+# Install elm-test-rs for frontend unit testing
+if ! command -v elm-test-rs &> /dev/null; then
+    echo "Installing elm-test-rs..."
+    if command -v npm &> /dev/null; then
+        sudo npm install -g elm-test-rs
+    else
+        echo "Warning: npm not found. Skipping elm-test-rs installation."
+    fi
+else
+    echo "elm-test-rs already exists."
+fi
+
 
 echo "--------------------------------------------------------"
 echo "Development environment setup complete!"

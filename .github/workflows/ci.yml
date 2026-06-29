@@ -45,6 +45,17 @@ jobs:
         elm make src/elm/Main.elm --output=src/static/elm.js
         git diff --exit-code src/static/elm.js
 
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install elm-test-rs
+      run: npm install -g elm-test-rs
+
+    - name: Run Elm unit tests
+      run: elm-test-rs
+
     - name: Upload Elm compilation result
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
