@@ -25,6 +25,15 @@ echo "Upgrading pip and installing dependencies..."
 .venv/bin/pip install --upgrade pip
 .venv/bin/pip install -r requirements.txt
 
+# Ensure Node.js and npm are installed (required by elm-test-rs)
+if ! command -v node &> /dev/null || ! command -v npm &> /dev/null; then
+    echo "Node.js and/or npm not found. Installing..."
+    sudo apt-get update
+    sudo apt-get install -y nodejs npm
+else
+    echo "Node.js and npm already exist."
+fi
+
 # Ensure Elm compiler is installed
 ELM_CACHE_DIR="$HOME/host-cache/elm"
 ELM_CACHE_PATH="$ELM_CACHE_DIR/elm"
@@ -44,6 +53,27 @@ fi
 if ! command -v elm &> /dev/null; then
     echo "Creating symlink to /usr/local/bin/elm..."
     sudo ln -sf "$ELM_CACHE_PATH" /usr/local/bin/elm
+fi
+
+# Install elm-test-rs for frontend unit testing
+ELM_TEST_RS_CACHE_DIR="$HOME/host-cache/elm/elm-test-rs"
+ELM_TEST_RS_CACHE_PATH="$ELM_TEST_RS_CACHE_DIR/elm-test-rs"
+
+if [ ! -f "$ELM_TEST_RS_CACHE_PATH" ]; then
+    echo "elm-test-rs binary not found in host cache. Downloading..."
+    mkdir -p "$ELM_TEST_RS_CACHE_DIR"
+    curl -L -o elm-test-rs.tar.gz https://github.com/mpizenberg/elm-test-rs/releases/download/v3.0.2/elm-test-rs_linux.tar.gz
+    tar -xzf elm-test-rs.tar.gz
+    chmod +x elm-test-rs
+    mv elm-test-rs "$ELM_TEST_RS_CACHE_PATH"
+    rm elm-test-rs.tar.gz
+else
+    echo "elm-test-rs binary found in host cache."
+fi
+
+if ! command -v elm-test-rs &> /dev/null; then
+    echo "Creating symlink to /usr/local/bin/elm-test-rs..."
+    sudo ln -sf "$ELM_TEST_RS_CACHE_PATH" /usr/local/bin/elm-test-rs
 fi
 
 

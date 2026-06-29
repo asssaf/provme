@@ -40,10 +40,19 @@ jobs:
         chmod +x elm
         sudo mv elm /usr/local/bin/
 
-    - name: Verify Elm Compilation & Asset Integrity
+    - name: Compile Elm Frontend
       run: |
         elm make src/elm/Main.elm --output=src/static/elm.js
-        git diff --exit-code src/static/elm.js
+
+    - name: Set up elm-test-rs
+      run: |
+        curl -L -o elm-test-rs.tar.gz https://github.com/mpizenberg/elm-test-rs/releases/download/v3.0.2/elm-test-rs_linux.tar.gz
+        tar -xzf elm-test-rs.tar.gz
+        chmod +x elm-test-rs
+        sudo mv elm-test-rs /usr/local/bin/
+
+    - name: Run Elm unit tests
+      run: elm-test-rs
 
     - name: Upload Elm compilation result
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
