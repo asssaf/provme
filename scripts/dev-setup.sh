@@ -25,8 +25,31 @@ echo "Upgrading pip and installing dependencies..."
 .venv/bin/pip install --upgrade pip
 .venv/bin/pip install -r requirements.txt
 
+# Ensure Elm compiler is installed
+ELM_CACHE_DIR="$HOME/host-cache/elm"
+ELM_CACHE_PATH="$ELM_CACHE_DIR/elm"
+
+if [ ! -f "$ELM_CACHE_PATH" ]; then
+    echo "Elm binary not found in host cache ($ELM_CACHE_PATH). Downloading..."
+    mkdir -p "$ELM_CACHE_DIR"
+    curl -L -o elm.gz https://github.com/elm/compiler/releases/download/0.19.1/binary-for-linux-64-bit.gz
+    gunzip elm.gz
+    chmod +x elm
+    mv elm "$ELM_CACHE_PATH"
+else
+    echo "Elm compiler binary found in host cache."
+fi
+
+# Link cached binary to /usr/local/bin if not already in PATH
+if ! command -v elm &> /dev/null; then
+    echo "Creating symlink to /usr/local/bin/elm..."
+    sudo ln -sf "$ELM_CACHE_PATH" /usr/local/bin/elm
+fi
+
+
 echo "--------------------------------------------------------"
 echo "Development environment setup complete!"
 echo "To use the environment, activate the virtual environment:"
 echo "  source .venv/bin/activate"
 echo "--------------------------------------------------------"
+

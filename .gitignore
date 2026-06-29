@@ -5,3 +5,7 @@ __pycache__/
 
 # Virtual environment
 .venv/
+
+# Elm compiler cache
+elm-stuff/
+
