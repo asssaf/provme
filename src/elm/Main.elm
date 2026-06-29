@@ -282,12 +282,12 @@ view model =
                 |> uniqueList
                 |> List.length
 
-        lastActText =
+        lastActHtml =
             if model.lastActivity == "Never" then
-                "Never"
+                text "Never"
 
             else
-                formatTimeStr model.lastActivity
+                Html.node "local-time" [ attribute "datetime" model.lastActivity ] []
     in
     div [ class "container" ]
         [ -- Header
@@ -307,9 +307,9 @@ view model =
             ]
         , -- Stats Grid
           div [ class "stats-grid" ]
-            [ statCard "Total Clients" (String.fromInt (List.length model.registrations)) "Registered in-memory" "var(--primary)" totalClientsIcon
-            , statCard "Unique IPs" (String.fromInt uniqueIps) "Distinct client locations" "var(--cyan)" uniqueIpsIcon
-            , statCard "Last Activity" lastActText "Latest registration event" "var(--emerald)" lastActivityIcon
+            [ statCard "Total Clients" (text (String.fromInt (List.length model.registrations))) "Registered in-memory" "var(--primary)" totalClientsIcon
+            , statCard "Unique IPs" (text (String.fromInt uniqueIps)) "Distinct client locations" "var(--cyan)" uniqueIpsIcon
+            , statCard "Last Activity" lastActHtml "Latest registration event" "var(--emerald)" lastActivityIcon
             ]
         , -- Controls Toolbar
           div [ class "controls-row" ]
@@ -387,12 +387,12 @@ view model =
 
 -- VIEW HELPERS
 
-statCard : String -> String -> String -> String -> Html Msg -> Html Msg
-statCard titleText val desc color icon =
+statCard : String -> Html Msg -> String -> String -> Html Msg -> Html Msg
+statCard titleText valHtml desc color icon =
     div [ class "stat-card", style "--card-accent" color ]
         [ div [ class "stat-info" ]
             [ h3 [] [ text titleText ]
-            , div [ class "stat-value" ] [ text val ]
+            , div [ class "stat-value" ] [ valHtml ]
             , div [ class "stat-desc" ] [ text desc ]
             ]
         , div [ class "stat-icon-wrapper" ] [ icon ]
@@ -427,7 +427,8 @@ viewClientRow client =
             , button [ class "key-action-btn", onClick (OpenKeyModal client.ssh.hostKey) ] [ text "View Key" ]
             ]
         , td []
-            [ span [ class "time-text", title client.createdAt ] [ text (formatTimeStr client.createdAt) ]
+            [ span [ class "time-text", title client.createdAt ]
+                [ Html.node "local-time" [ attribute "datetime" client.createdAt ] [] ]
             ]
         , td [ style "text-align" "right" ]
             [ button [ class "btn-danger-link", title "Deregister Client", onClick (DeleteClient client.clientId) ] [ deleteIcon ]

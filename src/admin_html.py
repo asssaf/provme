@@ -813,6 +813,35 @@ ADMIN_HTML = """<!DOCTYPE html>
 
     <script src="/static/elm.js"></script>
     <script>
+        // Define local-time custom element for client-side local time formatting
+        customElements.define('local-time', class extends HTMLElement {
+            static get observedAttributes() { return ['datetime']; }
+            attributeChangedCallback(name, oldValue, newValue) {
+                if (name === 'datetime') {
+                    this.updateTime(newValue);
+                }
+            }
+            connectedCallback() {
+                this.updateTime(this.getAttribute('datetime'));
+            }
+            updateTime(datetime) {
+                if (!datetime) return;
+                var date = new Date(datetime);
+                if (isNaN(date.getTime())) {
+                    this.textContent = datetime;
+                    return;
+                }
+                var pad = function(num) { return ('0' + num).slice(-2); };
+                var formatted = date.getFullYear() + '-' +
+                    pad(date.getMonth() + 1) + '-' +
+                    pad(date.getDate()) + ' ' +
+                    pad(date.getHours()) + ':' +
+                    pad(date.getMinutes()) + ':' +
+                    pad(date.getSeconds());
+                this.textContent = formatted;
+            }
+        });
+
         // Initialize Elm Application
         var app = Elm.Main.init({
             node: document.getElementById('elm-app')
