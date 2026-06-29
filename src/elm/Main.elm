@@ -87,7 +87,7 @@ type Msg
     | Tick Time.Posix
     | TriggerSimulation
     | SimulatePayload MockPayload
-    | Registered (Result Http.Error Client)
+    | SimulationRegistered (Result Http.Error Client)
     | DeleteClient String
     | Deleted String (Result Http.Error String)
     | OpenKeyModal String
@@ -124,7 +124,7 @@ registerMockCmd payload =
     Http.post
         { url = "/v1/register"
         , body = Http.jsonBody (encodeMockPayload payload)
-        , expect = Http.expectJson Registered clientDecoder
+        , expect = Http.expectJson SimulationRegistered clientDecoder
         }
 
 
@@ -178,7 +178,7 @@ update msg model =
         SimulatePayload payload ->
             ( model, registerMockCmd payload )
 
-        Registered result ->
+        SimulationRegistered result ->
             case result of
                 Ok _ ->
                     let

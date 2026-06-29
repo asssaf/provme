@@ -221,5 +221,40 @@ suite =
                     in
                     List.length updatedModel.toasts
                         |> Expect.equal 1
+
+            , test "SimulationRegistered Ok adds a success toast" <|
+                \_ ->
+                    let
+                        ( initialModel, _ ) = init ()
+                        client = { clientId = "1", ip = "1.1.1.1", ssh = { user = "u", port_ = 22, hostKey = "k" }, createdAt = "2026-01-01T00:00:00Z" }
+                        ( updatedModel, _ ) = update (SimulationRegistered (Ok client)) initialModel
+                        toast = List.head updatedModel.toasts
+                    in
+                    case toast of
+                        Just t ->
+                            Expect.all
+                                [ \x -> Expect.equal "Simulation: Registered new client" x.message
+                                , \x -> Expect.equal Success x.type_
+                                ]
+                                t
+                        Nothing ->
+                            Expect.fail "Expected a toast to be added"
+
+            , test "SimulationRegistered failure adds an error toast" <|
+                \_ ->
+                    let
+                        ( initialModel, _ ) = init ()
+                        ( updatedModel, _ ) = update (SimulationRegistered (Err Http.NetworkError)) initialModel
+                        toast = List.head updatedModel.toasts
+                    in
+                    case toast of
+                        Just t ->
+                            Expect.all
+                                [ \x -> Expect.equal "Failed to simulate registration" x.message
+                                , \x -> Expect.equal Error x.type_
+                                ]
+                                t
+                        Nothing ->
+                            Expect.fail "Expected a toast to be added"
             ]
         ]
