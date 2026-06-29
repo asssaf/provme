@@ -47,15 +47,24 @@ if ! command -v elm &> /dev/null; then
 fi
 
 # Install elm-test-rs for frontend unit testing
-if ! command -v elm-test-rs &> /dev/null; then
-    echo "Installing elm-test-rs..."
-    if command -v npm &> /dev/null; then
-        sudo npm install -g elm-test-rs
-    else
-        echo "Warning: npm not found. Skipping elm-test-rs installation."
-    fi
+ELM_TEST_RS_CACHE_DIR="$HOME/host-cache/elm-test-rs"
+ELM_TEST_RS_CACHE_PATH="$ELM_TEST_RS_CACHE_DIR/elm-test-rs"
+
+if [ ! -f "$ELM_TEST_RS_CACHE_PATH" ]; then
+    echo "elm-test-rs binary not found in host cache. Downloading..."
+    mkdir -p "$ELM_TEST_RS_CACHE_DIR"
+    curl -L -o elm-test-rs.tar.gz https://github.com/mpizenberg/elm-test-rs/releases/download/v3.0.2/elm-test-rs_linux.tar.gz
+    tar -xzf elm-test-rs.tar.gz
+    chmod +x elm-test-rs
+    mv elm-test-rs "$ELM_TEST_RS_CACHE_PATH"
+    rm elm-test-rs.tar.gz
 else
-    echo "elm-test-rs already exists."
+    echo "elm-test-rs binary found in host cache."
+fi
+
+if ! command -v elm-test-rs &> /dev/null; then
+    echo "Creating symlink to /usr/local/bin/elm-test-rs..."
+    sudo ln -sf "$ELM_TEST_RS_CACHE_PATH" /usr/local/bin/elm-test-rs
 fi
 
 
